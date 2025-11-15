@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "j0gx26P0wRkrAHG1H8W/xM+jYilTQ53qRaHCuPBuXio=",
+  "Source": "InnerHealth.Api",
+  "BasePath": "_content/InnerHealth.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
