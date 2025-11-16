@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "atKd8ra7coM=",
+  "dgSpecHash": "tsVVcmU0Nwk=",
   "success": true,
-  "projectFilePath": "/Users/rcm/Desktop/innerhealth-backend final/InnerHealth.Api/InnerHealth.Api.csproj",
+  "projectFilePath": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj",
   "expectedPackageFiles": [
     "/Users/rcm/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/Users/rcm/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

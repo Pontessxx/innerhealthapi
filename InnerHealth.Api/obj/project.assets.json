@@ -3212,11 +3212,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/rcm/Desktop/innerhealth-backend final/InnerHealth.Api/InnerHealth.Api.csproj",
+      "projectUniqueName": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj",
       "projectName": "InnerHealth.Api",
-      "projectPath": "/Users/rcm/Desktop/innerhealth-backend final/InnerHealth.Api/InnerHealth.Api.csproj",
+      "projectPath": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj",
       "packagesPath": "/Users/rcm/.nuget/packages/",
-      "outputPath": "/Users/rcm/Desktop/innerhealth-backend final/InnerHealth.Api/obj/",
+      "outputPath": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/rcm/.nuget/NuGet/NuGet.Config"

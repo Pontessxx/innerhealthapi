@@ -3,19 +3,20 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using InnerHealth.Api.Data;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Adiciona os controllers na parada.
 builder.Services.AddControllers();
 
-// Configure EF Core with SQLite. SQLite is file-based and does not require a local SQL Server installation.
-// The connection string is defined in appsettings.json. When using SQLite, EF Core will create the database file
-// automatically if it does not exist. This avoids the need for SQL Server Express or LocalDB on the machine.
+// Aqui a gente registra o DbContext usando SQLite (simples e ótimo pra projeto acadêmico).
+// A connection string tá lá no appsettings.json. Com SQLite, o EF Core cria o arquivo do banco
+// se não existir, então não precisa ficar instalando SQL Server Express ou LocalDB.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// API versioning configuration
+// Configuração de versionamento da API
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -23,17 +24,17 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
 });
 
-// Adds API Explorer to support Swagger versioning
+// Adiciona o API Explorer pra ajudar no versionamento do Swagger
 builder.Services.AddVersionedApiExplorer(options =>
 {
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
 });
 
-// Register AutoMapper for DTO mapping
+// Registra o AutoMapper pra mapear DTOs
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-// Register domain services
+// Registra os serviços do domínio
 builder.Services.AddScoped<InnerHealth.Api.Services.IUserService, InnerHealth.Api.Services.UserService>();
 builder.Services.AddScoped<InnerHealth.Api.Services.IWaterService, InnerHealth.Api.Services.WaterService>();
 builder.Services.AddScoped<InnerHealth.Api.Services.ISunlightService, InnerHealth.Api.Services.SunlightService>();
@@ -45,7 +46,7 @@ builder.Services.AddScoped<InnerHealth.Api.Services.ITaskService, InnerHealth.Ap
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // Add a basic Swagger doc for each API version. Runtime groups are added below.
+    // Cria uma doc básica do Swagger pra cada versão da API. Os grupos dinâmicos rolam depois.
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -62,15 +63,14 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// Show developer exception page only in development
+// Swagger liberado no ambiente de desenvolvimento pra facilitar testes e debug
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// Always enable Swagger and Swagger UI regardless of environment. This ensures the API documentation
-// is available in production builds and avoids 404 errors when accessing /swagger.
+// Swagger sempre ligado, independente do ambiente. Assim a documentação fica acessível
+// em produção e evita erro 404 quando acessar /swagger.
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -82,6 +82,50 @@ app.UseSwaggerUI(c =>
 
 app.UseAuthorization();
 
+
 app.MapControllers();
+
+
+// Aplica automaticamente as migrações pendentes ou cria o esquema se não houver migrations.
+//
+// O EF Core marca as migrações aplicadas na tabela __EFMigrationsHistory. Em cenários em que
+// o banco foi criado manualmente ou as migrações ficaram fora de sincronia (por exemplo,
+// ao renomear namespaces ou mover arquivos), pode ocorrer de o banco existir mas as
+// tabelas não estarem presentes. Para contornar isso, usamos a seguinte lógica:
+//   1. Obtemos as migrações pendentes via GetPendingMigrations().
+//   2. Se houver pendentes, tentamos aplicar via Migrate().
+//   3. Se não houver pendentes ou o Migrate() falhar, usamos EnsureCreated() para
+//      garantir que todas as tabelas definidas no DbContext sejam criadas.
+//
+// Esse fallback faz com que a API funcione mesmo em ambientes onde o dotnet-ef não está
+// disponível ou quando o banco ficou em um estado inconsistente. Caso esteja usando um
+// provedor relacional diferente de SQLite em produção, recomende-se rodar as migrations
+// via CLI para um controle mais granular.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        var pending = db.Database.GetPendingMigrations();
+        // Se houver migrations pendentes, aplicamos normalmente
+        if (pending.Any())
+        {
+            db.Database.Migrate();
+        }
+        else
+        {
+            // Caso não haja nenhuma pendente, garantimos que as tabelas existam.
+            db.Database.EnsureCreated();
+        }
+    }
+    catch
+    {
+        // Em caso de erro (por exemplo, migrations inconsistentes), garantimos que
+        // o esquema seja criado a partir do modelo atual. Isso evita erros
+        // “no such table” na primeira execução.
+        db.Database.EnsureCreated();
+    }
+}
+
 
 app.Run();
