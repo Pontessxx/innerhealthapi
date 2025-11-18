@@ -1,3 +1,3 @@
 ﻿<Project>
-  <Import Project="../buildMultiTargeting/InnerHealth.Api.props" />
+  <Import Project="..\buildMultiTargeting\InnerHealth.Api.props" />
 </Project>

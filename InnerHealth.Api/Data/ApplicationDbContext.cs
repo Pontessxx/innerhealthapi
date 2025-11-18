@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using InnerHealth.Api.Models;
+using InnerHealth.Api.Domain.Entities;
 
 namespace InnerHealth.Api.Data
 {
@@ -20,6 +21,9 @@ namespace InnerHealth.Api.Data
         public DbSet<SleepRecord> SleepRecords => Set<SleepRecord>();
         public DbSet<PhysicalActivity> PhysicalActivities => Set<PhysicalActivity>();
         public DbSet<TaskItem> TaskItems => Set<TaskItem>();
+
+        public DbSet<User> Users => Set<User>();
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

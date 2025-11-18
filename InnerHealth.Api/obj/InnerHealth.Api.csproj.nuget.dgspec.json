@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj": {}
+    "E:\\InnerHealth-API\\InnerHealth.Api\\InnerHealth.Api.csproj": {}
   },
   "projects": {
-    "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj": {
+    "E:\\InnerHealth-API\\InnerHealth.Api\\InnerHealth.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj",
+        "projectUniqueName": "E:\\InnerHealth-API\\InnerHealth.Api\\InnerHealth.Api.csproj",
         "projectName": "InnerHealth.Api",
-        "projectPath": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/InnerHealth.Api.csproj",
-        "packagesPath": "/Users/rcm/.nuget/packages/",
-        "outputPath": "/Users/rcm/Desktop/projeto/InnerHealth-backend/InnerHealth.Api/obj/",
+        "projectPath": "E:\\InnerHealth-API\\InnerHealth.Api\\InnerHealth.Api.csproj",
+        "packagesPath": "C:\\Users\\Henrique\\.nuget\\packages\\",
+        "outputPath": "E:\\InnerHealth-API\\InnerHealth.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/rcm/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Henrique\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -47,6 +47,14 @@
               "target": "Package",
               "version": "[12.0.1, )"
             },
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.AspNetCore.Mvc.Versioning": {
               "target": "Package",
               "version": "[5.1.0, )"
@@ -68,9 +76,17 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
+            "Pomelo.EntityFrameworkCore.MySql": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.5.0, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.14.0, )"
             }
           },
           "imports": [
@@ -92,7 +108,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.410/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.407/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

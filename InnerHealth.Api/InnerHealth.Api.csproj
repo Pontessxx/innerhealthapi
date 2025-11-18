@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <!-- Entity Framework Core core package -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
 
     <!-- Replace the SQL Server provider with the SQLite provider to avoid requiring a local SQL Server installation -->
@@ -16,6 +18,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
     <!-- Swagger for API documentation -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <!-- API versioning -->
@@ -25,5 +28,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
     <!-- AutoMapper for DTO/entity mapping -->
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
 </Project>

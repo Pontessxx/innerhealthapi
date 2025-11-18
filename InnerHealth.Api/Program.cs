@@ -2,21 +2,61 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 using InnerHealth.Api.Data;
-using System.Linq;
+using InnerHealth.Api.Services;
+using InnerHealth.Api.Domain.Entities;      // User
+using InnerHealth.Api.Domain.Enums;         // UserRole
+using InnerHealth.Api.Auth;                 // JwtService
+using InnerHealth.Api.Infrastructure.Data; // UserRepository
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Adiciona os controllers na parada.
+// =============================================
+// CONTROLLERS
+// =============================================
 builder.Services.AddControllers();
 
-// Aqui a gente registra o DbContext usando SQLite (simples e ótimo pra projeto acadêmico).
-// A connection string tá lá no appsettings.json. Com SQLite, o EF Core cria o arquivo do banco
-// se não existir, então não precisa ficar instalando SQL Server Express ou LocalDB.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configuração de versionamento da API
+// =============================================
+// DATABASE (SQLite + EF)
+// =============================================
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseMySql(cs, ServerVersion.AutoDetect(cs));
+});
+
+// =============================================
+// SERVICES (DOMAIN SERVICES)
+// =============================================
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWaterService, WaterService>();
+builder.Services.AddScoped<ISunlightService, SunlightService>();
+builder.Services.AddScoped<IMeditationService, MeditationService>();
+builder.Services.AddScoped<ISleepService, SleepService>();
+builder.Services.AddScoped<IPhysicalActivityService, PhysicalActivityService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+
+// =============================================
+// AUTH & SECURITY SERVICES
+// =============================================
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<JwtService>();
+
+
+// =============================================
+// AUTOMAPPER
+// =============================================
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+
+// =============================================
+// API VERSIONING
+// =============================================
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -24,53 +64,101 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
 });
 
-// Adiciona o API Explorer pra ajudar no versionamento do Swagger
 builder.Services.AddVersionedApiExplorer(options =>
 {
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
 });
 
-// Registra o AutoMapper pra mapear DTOs
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-// Registra os serviços do domínio
-builder.Services.AddScoped<InnerHealth.Api.Services.IUserService, InnerHealth.Api.Services.UserService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.IWaterService, InnerHealth.Api.Services.WaterService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.ISunlightService, InnerHealth.Api.Services.SunlightService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.IMeditationService, InnerHealth.Api.Services.MeditationService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.ISleepService, InnerHealth.Api.Services.SleepService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.IPhysicalActivityService, InnerHealth.Api.Services.PhysicalActivityService>();
-builder.Services.AddScoped<InnerHealth.Api.Services.ITaskService, InnerHealth.Api.Services.TaskService>();
+// =============================================
+// JWT CONFIGURATION
+// =============================================
 
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
+var issuer = builder.Configuration["Jwt:Issuer"];
+var audience = builder.Configuration["Jwt:Audience"];
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
+
+
+// =============================================
+// SWAGGER CONFIG (COM JWT)
+// =============================================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // Cria uma doc básica do Swagger pra cada versão da API. Os grupos dinâmicos rolam depois.
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
         Title = "InnerHealth API v1",
-        Description = "InnerHealth API v1 oferece endpoints para acompanhar hidratação diária, exposição ao sol, meditação, sono, atividade física, tarefas e informações do perfil do usuário."
+        Description = "Versão inicial da API"
     });
+
     options.SwaggerDoc("v2", new OpenApiInfo
     {
         Version = "v2",
         Title = "InnerHealth API v2",
-        Description = "InnerHealth API v2 expande a v1 com recomendações automáticas e resumos diários aprimorados."
+        Description = "Versão avançada da API"
+    });
+
+    // JWT AUTH NO SWAGGER
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Insira o token JWT no formato: Bearer {seu_token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme 
+            {
+                Reference = new OpenApiReference 
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
+
+// =============================================
+// BUILD APP
+// =============================================
 var app = builder.Build();
 
-// Swagger liberado no ambiente de desenvolvimento pra facilitar testes e debug
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
 
-// Swagger sempre ligado, independente do ambiente. Assim a documentação fica acessível
-// em produção e evita erro 404 quando acessar /swagger.
+// =============================================
+// SWAGGER ALWAYS ENABLED
+// =============================================
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -78,54 +166,48 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v2/swagger.json", "InnerHealth API v2");
 });
 
-// app.UseHttpsRedirection();
 
+// =============================================
+// AUTH & AUTHORIZATION
+// =============================================
+app.UseAuthentication();
 app.UseAuthorization();
 
 
+// =============================================
+// CONTROLLERS
+// =============================================
 app.MapControllers();
 
 
-// Aplica automaticamente as migrações pendentes ou cria o esquema se não houver migrations.
-//
-// O EF Core marca as migrações aplicadas na tabela __EFMigrationsHistory. Em cenários em que
-// o banco foi criado manualmente ou as migrações ficaram fora de sincronia (por exemplo,
-// ao renomear namespaces ou mover arquivos), pode ocorrer de o banco existir mas as
-// tabelas não estarem presentes. Para contornar isso, usamos a seguinte lógica:
-//   1. Obtemos as migrações pendentes via GetPendingMigrations().
-//   2. Se houver pendentes, tentamos aplicar via Migrate().
-//   3. Se não houver pendentes ou o Migrate() falhar, usamos EnsureCreated() para
-//      garantir que todas as tabelas definidas no DbContext sejam criadas.
-//
-// Esse fallback faz com que a API funcione mesmo em ambientes onde o dotnet-ef não está
-// disponível ou quando o banco ficou em um estado inconsistente. Caso esteja usando um
-// provedor relacional diferente de SQLite em produção, recomende-se rodar as migrations
-// via CLI para um controle mais granular.
+// =============================================
+// DATABASE (AUTO CREATE) + SEED ADMIN
+// =============================================
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
+    
+    // Cria o BD e tabelas caso não existam
+    db.Database.EnsureCreated();
+
+    // Seed admin (somente se tabela existir)
+    if (!db.Users.Any())
     {
-        var pending = db.Database.GetPendingMigrations();
-        // Se houver migrations pendentes, aplicamos normalmente
-        if (pending.Any())
+        db.Users.Add(new User
         {
-            db.Database.Migrate();
-        }
-        else
-        {
-            // Caso não haja nenhuma pendente, garantimos que as tabelas existam.
-            db.Database.EnsureCreated();
-        }
-    }
-    catch
-    {
-        // Em caso de erro (por exemplo, migrations inconsistentes), garantimos que
-        // o esquema seja criado a partir do modelo atual. Isso evita erros
-        // “no such table” na primeira execução.
-        db.Database.EnsureCreated();
+            Name = "Admin",
+            Email = "admin@innerhealth.com",
+            Role = UserRole.Admin,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!")
+        });
+
+        db.SaveChanges();
     }
 }
 
 
+
+// =============================================
+// RUN APP
+// =============================================
 app.Run();
