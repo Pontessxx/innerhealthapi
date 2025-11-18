@@ -1,11 +1,25 @@
 version: "3.9"
 
+networks:
+  gs-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.11.200.0/24
+
+volumes:
+  mysql_data:
+  gs-volume:
+
 services:
 
   mysql:
     image: mysql:8.0
     container_name: innerhealth_mysql
     restart: always
+    networks:
+      gs-network:
+        ipv4_address: 10.11.200.10
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: innerhealth
@@ -26,13 +40,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: pontessx/innerhealth:latest
     container_name: innerhealth_api
     restart: always
+    networks:
+      gs-network:
+        ipv4_address: 10.11.200.20
     depends_on:
       mysql:
         condition: service_healthy
     ports:
       - "8080:8080"
+    volumes:
+      - gs-volume:/var/www/html          # persistência exigida pela FIAP
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
 
@@ -41,8 +61,5 @@ services:
       Jwt__Issuer: "InnerHealthAPI"
       Jwt__Audience: "InnerHealthClient"
 
-      # ===== DATABASE VARIÁVEIS =====
-      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=innerhealth;user=root;password=root123;"
-
-volumes:
-  mysql_data:
+      # ===== DATABASE VARIÁVEIS CORRETAS =====
+      ConnectionStrings__DefaultConnection: "server=10.11.200.10;port=3306;database=innerhealth;user=innerhealth;password=innerpass;"

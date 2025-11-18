@@ -1,32 +1,23 @@
 # ================================
-# STAGE 1 — BUILD
+# STAGE 1 — BUILD (.NET 8 SDK)
 # ================================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copia tudo
 COPY . .
 
-# Restaura dependências
 RUN dotnet restore
-
-# Publica em modo Release
-RUN dotnet publish -c Release -o /out
+RUN dotnet publish -c Release -o /app
 
 # ================================
-# STAGE 2 — RUNTIME
+# STAGE 2 — RUNTIME (ASP.NET 8)
 # ================================
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /var/www/html
 
-# Copia arquivos publicados
-COPY --from=build /out .
+COPY --from=build /app .
 
-# Porta exposta pela API
 EXPOSE 8080
-
-# Variável de ambiente opcional
 ENV ASPNETCORE_URLS=http://+:8080
 
-# Inicia a aplicação
 ENTRYPOINT ["dotnet", "InnerHealth.Api.dll"]
