@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InnerHealth.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3a574e2f86dbb00016b9dfd793fae8205519bf92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f999f37331757616bb1a98295e56bc2d0bb18b3a")]
 [assembly: System.Reflection.AssemblyProductAttribute("InnerHealth.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InnerHealth.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -163,6 +163,12 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v2/swagger.json", "InnerHealth API v2");
 });
 
+app.UseMiddleware<InnerHealth.Api.Middleware.GlobalExceptionMiddleware>();
+app.MapGet("/test-exception", () =>
+{
+    throw new Exception("Erro de teste do middleware!");
+});
+
 
 // =============================================
 // AUTH & AUTHORIZATION
