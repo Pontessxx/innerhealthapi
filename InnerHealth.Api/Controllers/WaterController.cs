@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Models;
 using InnerHealth.Api.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -53,6 +55,12 @@ public class WaterController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna a ingestão de água registrada no dia atual.",
+        Description = "Inclui todas as entradas do dia, o total consumido em mL e o valor recomendado."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo diário de ingestão retornado com sucesso.")]
+
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -97,6 +105,12 @@ public class WaterController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+         Summary = "Retorna o total de ingestão de água na semana atual.",
+        Description = "A semana segue o padrão ISO-8601 (segunda a domingo). Retorna um dicionário com o total por dia."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Totais semanais retornados com sucesso.", typeof(Dictionary<string, int>))]
+
     public async Task<IActionResult> GetWeekly()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
@@ -139,6 +153,13 @@ public class WaterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Registra uma nova ingestão de água.",
+        Description = "Cria um novo registro de ingestão em mL associado automaticamente à data atual."
+    )]
+    [SwaggerResponse(StatusCodes.Status201Created, "Ingestão registrada com sucesso.", typeof(WaterIntakeDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Payload inválido — verifique os campos obrigatórios.")]
+
     public async Task<IActionResult> Post([FromBody] CreateWaterIntakeDto dto)
     {
         var intake = await _waterService.AddIntakeAsync(dto.AmountMl);
@@ -168,6 +189,13 @@ public class WaterController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza um registro de ingestão de água.",
+        Description = "Permite atualizar a quantidade ingerida em mL para um registro já existente."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Registro de ingestão atualizado com sucesso.", typeof(WaterIntakeDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Registro não encontrado.")]
+
     public async Task<IActionResult> Put(int id, [FromBody] UpdateWaterIntakeDto dto)
     {
         var updated = await _waterService.UpdateIntakeAsync(id, dto.AmountMl);
@@ -189,11 +217,19 @@ public class WaterController : ControllerBase
     /// <param name="id">ID do registro.</param>
     /// <response code="204">Registro excluído com sucesso.</response>
     /// <response code="404">Registro não encontrado.</response>
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Exclui um registro de ingestão de água pelo ID.",
+        Description = "Remove permanentemente o registro especificado, caso exista."
+    )]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Registro excluído com sucesso.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Registro não encontrado.")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _waterService.DeleteIntakeAsync(id);

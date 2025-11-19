@@ -24,10 +24,17 @@ builder.Services.AddControllers();
 // =============================================
 // DATABASE (SQLite + EF)
 // =============================================
+
+// ? Para utilizar o mysql quando for para o DOCKER, caso queria rodar localmente deixe comentado
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// {
+//     var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+//     options.UseMySql(cs, ServerVersion.AutoDetect(cs));
+// });
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var cs = builder.Configuration.GetConnectionString("DefaultConnection");
-    options.UseMySql(cs, ServerVersion.AutoDetect(cs));
+    var cs = builder.Configuration.GetConnectionString("SQLite");
+    options.UseSqlite(cs);
 });
 
 // =============================================
@@ -133,20 +140,10 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme 
-            {
-                Reference = new OpenApiReference 
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+    
+    options.OperationFilter<InnerHealth.Api.Swagger.AuthOperationFilter>();
+
+    options.EnableAnnotations();
 });
 
 
@@ -186,24 +183,32 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    
-    // Cria o BD e tabelas caso não existam
+
+    // Cria o banco e as tabelas
     db.Database.EnsureCreated();
 
-    // Seed admin (somente se tabela existir)
-    if (!db.Users.Any())
+    try
     {
-        db.Users.Add(new User
+        // Seed apenas se Users existir e estiver vazio
+        if (db.Users.Any() == false)
         {
-            Name = "Admin",
-            Email = "admin@innerhealth.com",
-            Role = UserRole.Admin,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!")
-        });
+            db.Users.Add(new User
+            {
+                Name = "Admin",
+                Email = "admin@innerhealth.com",
+                Role = UserRole.Admin,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!")
+            });
 
-        db.SaveChanges();
+            db.SaveChanges();
+        }
+    }
+    catch
+    {
+        // Quando Users ainda não existe → ignora, na próxima execução funciona
     }
 }
+
 
 
 

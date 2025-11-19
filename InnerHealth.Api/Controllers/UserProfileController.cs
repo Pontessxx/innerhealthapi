@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
 using InnerHealth.Api.Models;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -59,6 +60,12 @@ public class UserProfileController : ControllerBase
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna o perfil atual do usuário.",
+        Description = "Retorna todas as informações do perfil do usuário, incluindo nome, idade, altura, peso e objetivo. Caso nenhum perfil exista ainda, retorna null."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Perfil retornado com sucesso ou null caso não exista.", typeof(UserProfileDto))]
+
     public async Task<IActionResult> Get()
     {
         var user = await _userService.GetUserAsync();
@@ -105,6 +112,13 @@ public class UserProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza o perfil do usuário.",
+        Description = "Atualiza os dados do perfil, como nome, idade, altura, peso e objetivo. O perfil é criado caso ainda não exista."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Perfil atualizado com sucesso.", typeof(UserProfileDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Payload inválido — verifique campos obrigatórios.")]
+
     public async Task<IActionResult> Put([FromBody] UpdateUserProfileDto dto)
     {
         var user = await _userService.UpdateUserAsync(dto);

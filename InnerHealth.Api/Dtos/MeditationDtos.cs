@@ -60,6 +60,7 @@ namespace InnerHealth.Api.Dtos
         /// Deve ser maior que zero.
         /// </summary>
         /// <example>12</example>
+        [Required(ErrorMessage = "A duração é obrigatória.")]
         [Range(1, int.MaxValue, ErrorMessage = "A duração deve ser de pelo menos 1 minuto.")]
         public int Minutes { get; set; }
     }
@@ -84,6 +85,7 @@ namespace InnerHealth.Api.Dtos
         /// Deve ser no mínimo 1 minuto.
         /// </summary>
         /// <example>20</example>
+        [Required(ErrorMessage = "A duração é obrigatória.")]
         [Range(1, int.MaxValue, ErrorMessage = "A duração deve ser de pelo menos 1 minuto.")]
         public int Minutes { get; set; }
     }

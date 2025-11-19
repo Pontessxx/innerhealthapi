@@ -2,6 +2,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -51,10 +53,14 @@ public class MeditationController : ControllerBase
     /// </remarks>
     /// <returns>Resumo de meditação do dia atual.</returns>
     /// <response code="200">Retorna as sessões registradas hoje e os totais agregados.</response>
-    [HttpGet("today")]
-    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-    [MapToApiVersion("1.0")]
-    [MapToApiVersion("2.0")]
+     [HttpGet("today")]
+        [SwaggerOperation(
+            Summary = "Retorna o resumo diário de meditação.",
+            Description = "Inclui as sessões registradas hoje, total de minutos e a recomendação diária."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Resumo diário retornado com sucesso.")]
+        [MapToApiVersion("1.0")]
+        [MapToApiVersion("2.0")]
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -99,10 +105,14 @@ public class MeditationController : ControllerBase
     /// </remarks>
     /// <returns>Totais semanais de meditação.</returns>
     /// <response code="200">Retorna os totais agregados da semana atual.</response>
-    [HttpGet("week")]
-    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
-    [MapToApiVersion("1.0")]
-    [MapToApiVersion("2.0")]
+     [HttpGet("week")]
+        [SwaggerOperation(
+            Summary = "Retorna o total semanal de meditação.",
+            Description = "Agrupa os minutos de segunda a domingo, mostrando o progresso semanal."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Totais semanais retornados com sucesso.")]
+        [MapToApiVersion("1.0")]
+        [MapToApiVersion("2.0")]
     public async Task<IActionResult> GetWeekly()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
@@ -131,10 +141,14 @@ public class MeditationController : ControllerBase
     /// <response code="201">Sessão criada com sucesso.</response>
     /// <response code="400">Dados inválidos.</response>
     [HttpPost]
-    [ProducesResponseType(typeof(MeditationSessionDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [MapToApiVersion("1.0")]
-    [MapToApiVersion("2.0")]
+        [SwaggerOperation(
+            Summary = "Registra uma nova sessão de meditação.",
+            Description = "Cria uma sessão no dia atual. Apenas os minutos precisam ser informados."
+        )]
+        [SwaggerResponse(StatusCodes.Status201Created, "Sessão criada com sucesso.", typeof(MeditationSessionDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Dados inválidos.")]
+        [MapToApiVersion("1.0")]
+        [MapToApiVersion("2.0")]
     public async Task<IActionResult> Post([FromBody] CreateMeditationSessionDto dto)
     {
         var session = await _meditationService.AddSessionAsync(dto.Minutes);
@@ -160,10 +174,14 @@ public class MeditationController : ControllerBase
     /// <response code="200">Retorna a sessão atualizada.</response>
     /// <response code="404">Sessão não encontrada.</response>
     [HttpPut("{id}")]
-    [ProducesResponseType(typeof(MeditationSessionDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [MapToApiVersion("1.0")]
-    [MapToApiVersion("2.0")]
+        [SwaggerOperation(
+            Summary = "Atualiza uma sessão de meditação.",
+            Description = "Permite alterar a duração da sessão existente."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Sessão atualizada com sucesso.", typeof(MeditationSessionDto))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Sessão não encontrada.")]
+        [MapToApiVersion("1.0")]
+        [MapToApiVersion("2.0")]
     public async Task<IActionResult> Put(int id, [FromBody] UpdateMeditationSessionDto dto)
     {
         var updated = await _meditationService.UpdateSessionAsync(id, dto.Minutes);
@@ -183,11 +201,16 @@ public class MeditationController : ControllerBase
     /// <param name="id">ID da sessão a ser removida.</param>
     /// <response code="204">Sessão excluída com sucesso.</response>
     /// <response code="404">Sessão não encontrada.</response>
+    [Authorize]
     [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [MapToApiVersion("1.0")]
-    [MapToApiVersion("2.0")]
+        [SwaggerOperation(
+            Summary = "Exclui uma sessão de meditação.",
+            Description = "Remove permanentemente a sessão pelo ID informado."
+        )]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Sessão excluída com sucesso.")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Sessão não encontrada.")]
+        [MapToApiVersion("1.0")]
+        [MapToApiVersion("2.0")]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _meditationService.DeleteSessionAsync(id);

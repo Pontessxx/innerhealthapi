@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
 using InnerHealth.Api.Models;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -62,6 +64,12 @@ public class SleepController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna o registro de sono do dia atual.",
+        Description = "Se nenhum registro existir para hoje, retorna `record: null`."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo diário de sono retornado com sucesso.")]
+
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -104,6 +112,12 @@ public class SleepController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, SleepRecordDto?>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna os registros de sono da semana atual.",
+        Description = "As semanas começam na segunda-feira. Retorna cada dia com seu registro ou null."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo semanal de sono retornado com sucesso.")]
+
     public async Task<IActionResult> GetWeekly()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
@@ -153,6 +167,13 @@ public class SleepController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Cria um novo registro de sono.",
+        Description = "Registra um novo total de horas dormidas e qualidade para o dia atual."
+    )]
+    [SwaggerResponse(StatusCodes.Status201Created, "Registro criado com sucesso.", typeof(SleepRecordDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Dados inválidos fornecidos.")]
+
     public async Task<IActionResult> Post([FromBody] CreateSleepRecordDto dto)
     {
         var record = await _sleepService.AddRecordAsync(dto.Hours, dto.Quality);
@@ -183,6 +204,13 @@ public class SleepController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza um registro de sono existente.",
+        Description = "Permite alterar as horas dormidas e a qualidade do sono."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Registro atualizado com sucesso.", typeof(SleepRecordDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Registro não encontrado.")]
+
     public async Task<IActionResult> Put(int id, [FromBody] UpdateSleepRecordDto dto)
     {
         var updated = await _sleepService.UpdateRecordAsync(id, dto.Hours, dto.Quality);
@@ -203,11 +231,19 @@ public class SleepController : ControllerBase
     /// <param name="id">ID do registro.</param>
     /// <response code="204">Registro excluído com sucesso.</response>
     /// <response code="404">Registro não encontrado.</response>
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Exclui um registro de sono pelo ID.",
+        Description = "Remove permanentemente o registro, caso exista."
+    )]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Registro excluído com sucesso.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Registro não encontrado.")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _sleepService.DeleteRecordAsync(id);

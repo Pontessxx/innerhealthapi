@@ -532,3 +532,4 @@ E:\InnerHealth-API\InnerHealth.Api\obj\Debug\net8.0\InnerHealth.Api.genruntimeco
 E:\InnerHealth-API\InnerHealth.Api\obj\Debug\net8.0\ref\InnerHealth.Api.dll
 E:\InnerHealth-API\InnerHealth.Api\bin\Debug\net8.0\MySqlConnector.dll
 E:\InnerHealth-API\InnerHealth.Api\bin\Debug\net8.0\Pomelo.EntityFrameworkCore.MySql.dll
+E:\InnerHealth-API\InnerHealth.Api\bin\Debug\net8.0\Swashbuckle.AspNetCore.Annotations.dll

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
 using InnerHealth.Api.Models;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -53,6 +55,12 @@ public class PhysicalActivityController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna as atividades físicas registradas no dia atual.",
+        Description = "Inclui todas as atividades registradas hoje, com modalidade, duração e horário."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Atividades do dia retornadas com sucesso.")]
+
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -94,6 +102,12 @@ public class PhysicalActivityController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, IEnumerable<PhysicalActivityDto>>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna todas as atividades físicas da semana atual.",
+        Description = "Lista atividades por dia útil, de segunda a domingo."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo semanal retornado com sucesso.")]
+
     public async Task<IActionResult> GetWeekly()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
@@ -141,6 +155,13 @@ public class PhysicalActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Registra uma nova sessão de atividade física.",
+        Description = "Cria uma nova atividade no dia atual. Modalidade e duração são obrigatórias."
+    )]
+    [SwaggerResponse(StatusCodes.Status201Created, "Atividade criada com sucesso.", typeof(PhysicalActivityDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Dados inválidos fornecidos.")]
+
     public async Task<IActionResult> Post([FromBody] CreatePhysicalActivityDto dto)
     {
         var activity = await _activityService.AddActivityAsync(dto.Modality, dto.DurationMinutes);
@@ -171,6 +192,13 @@ public class PhysicalActivityController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza um registro de atividade física.",
+        Description = "Permite alterar modalidade e duração de uma atividade existente."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Atividade atualizada com sucesso.", typeof(PhysicalActivityDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Atividade não encontrada.")]
+
     public async Task<IActionResult> Put(int id, [FromBody] UpdatePhysicalActivityDto dto)
     {
         var updated = await _activityService.UpdateActivityAsync(id, dto.Modality, dto.DurationMinutes);
@@ -191,11 +219,19 @@ public class PhysicalActivityController : ControllerBase
     /// <param name="id">ID da atividade.</param>
     /// <response code="204">Atividade excluída com sucesso.</response>
     /// <response code="404">Atividade não encontrada.</response>
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Exclui um registro de atividade física.",
+        Description = "Remove uma atividade existente pelo ID."
+    )]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Atividade excluída com sucesso.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Atividade não encontrada.")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _activityService.DeleteActivityAsync(id);

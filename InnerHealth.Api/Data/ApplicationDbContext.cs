@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using InnerHealth.Api.Models;
 using InnerHealth.Api.Domain.Entities;
+using InnerHealth.Api.Domain.Enums;
 
 namespace InnerHealth.Api.Data
 {
@@ -14,6 +15,7 @@ namespace InnerHealth.Api.Data
         {
         }
 
+        public DbSet<User> Users => Set<User>();
         public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
         public DbSet<WaterIntake> WaterIntakes => Set<WaterIntake>();
         public DbSet<SunlightSession> SunlightSessions => Set<SunlightSession>();
@@ -22,14 +24,13 @@ namespace InnerHealth.Api.Data
         public DbSet<PhysicalActivity> PhysicalActivities => Set<PhysicalActivity>();
         public DbSet<TaskItem> TaskItems => Set<TaskItem>();
 
-        public DbSet<User> Users => Set<User>();
 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Configure DateOnly properties to map to Date columns when using providers
+            // Configure DateOnly properties
             builder.Entity<WaterIntake>().Property(w => w.Date).HasColumnType("date");
             builder.Entity<SunlightSession>().Property(s => s.Date).HasColumnType("date");
             builder.Entity<MeditationSession>().Property(m => m.Date).HasColumnType("date");
@@ -37,10 +38,7 @@ namespace InnerHealth.Api.Data
             builder.Entity<PhysicalActivity>().Property(p => p.Date).HasColumnType("date");
             builder.Entity<TaskItem>().Property(t => t.Date).HasColumnType("date");
 
-            // Ensure decimal precision for weight, height, and hours slept.
-            // Without an explicit column type, EF Core will default to a provider-specific precision which
-            // may truncate values. Specifying precision ensures the values are stored correctly. In SQLite,
-            // the specified precision is advisory but still documents intended scale.
+            // Decimal precision (SQLite ignora, mas documenta intenção)
             builder.Entity<UserProfile>().Property(u => u.Weight).HasColumnType("decimal(10,2)");
             builder.Entity<UserProfile>().Property(u => u.Height).HasColumnType("decimal(10,2)");
             builder.Entity<UserProfile>().Property(u => u.SleepHours).HasColumnType("decimal(5,2)");

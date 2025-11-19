@@ -2,6 +2,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -54,6 +56,12 @@ public class SunlightController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+        [SwaggerOperation(
+        Summary = "Retorna o resumo diário de exposição ao sol.",
+        Description = "Inclui o total de minutos acumulados, minutos recomendados para o dia e todas as sessões registradas hoje."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo diário retornado com sucesso.")]
+
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -98,6 +106,12 @@ public class SunlightController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, int>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna os totais de exposição ao sol da semana atual.",
+        Description = "As semanas começam na segunda-feira. Retorna o total de minutos por dia."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Resumo semanal retornado com sucesso.")]
+
     public async Task<IActionResult> GetWeekly()
     {
         var today = DateOnly.FromDateTime(DateTime.Now);
@@ -140,6 +154,13 @@ public class SunlightController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Registra uma nova sessão de exposição ao sol.",
+        Description = "A data da sessão é automaticamente atribuída ao dia atual."
+    )]
+    [SwaggerResponse(StatusCodes.Status201Created, "Sessão criada com sucesso.", typeof(SunlightSessionDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Payload enviado é inválido.")]
+
     public async Task<IActionResult> Post([FromBody] CreateSunlightSessionDto dto)
     {
         var session = await _sunlightService.AddSessionAsync(dto.Minutes);
@@ -169,6 +190,13 @@ public class SunlightController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza uma sessão de exposição ao sol existente.",
+        Description = "Permite alterar a quantidade de minutos de exposição da sessão."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Sessão atualizada com sucesso.", typeof(SunlightSessionDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Sessão não encontrada.")]
+
     public async Task<IActionResult> Put(int id, [FromBody] UpdateSunlightSessionDto dto)
     {
         var updated = await _sunlightService.UpdateSessionAsync(id, dto.Minutes);
@@ -189,11 +217,19 @@ public class SunlightController : ControllerBase
     /// <param name="id">ID da sessão.</param>
     /// <response code="204">Sessão excluída com sucesso.</response>
     /// <response code="404">Sessão não encontrada.</response>
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Exclui uma sessão de exposição ao sol pelo ID.",
+        Description = "Remove a sessão definitivamente caso exista."
+    )]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Sessão excluída com sucesso.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Sessão não encontrada.")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _sunlightService.DeleteSessionAsync(id);

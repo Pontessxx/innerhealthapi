@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace InnerHealth.Api.Auth
 {
     /// <summary>
@@ -22,6 +23,7 @@ namespace InnerHealth.Api.Auth
         /// Endereço de e-mail associado à conta do usuário.
         /// </summary>
         /// <example>usuario@exemplo.com</example>
+        [Required(ErrorMessage = "O e-mail é obrigatório.")]
         public string Email { get; set; } = "";
 
         /// <summary>
@@ -31,6 +33,7 @@ namespace InnerHealth.Api.Auth
         /// A senha será comparada com o hash armazenado (BCrypt) para validação.
         /// </remarks>
         /// <example>minhasenha123</example>
+        [Required(ErrorMessage = "A senha é obrigatória.")]
         public string Password { get; set; } = "";
     }
 }

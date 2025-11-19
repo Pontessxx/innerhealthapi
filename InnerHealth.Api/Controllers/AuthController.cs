@@ -3,6 +3,7 @@ using InnerHealth.Api.Auth;
 using InnerHealth.Api.Domain.Entities;
 using InnerHealth.Api.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace InnerHealth.Api.Controllers
 {
@@ -46,9 +47,13 @@ namespace InnerHealth.Api.Controllers
         /// <response code="400">E-mail ou senha não foram informados corretamente.</response>
         /// <response code="401">Credenciais inválidas.</response>
         [HttpPost("login")]
-        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [SwaggerOperation(
+            Summary = "Realiza login e retorna um token JWT.",
+            Description = "Valida e-mail e senha fornecidos e emite um token JWT para acesso às rotas protegidas."
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Login realizado com sucesso.", typeof(AuthResponseDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "E-mail ou senha ausentes ou inválidos.")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Credenciais incorretas.")]
         public async Task<IActionResult> Login([FromBody] AuthRequestDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))

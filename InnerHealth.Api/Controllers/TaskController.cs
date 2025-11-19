@@ -2,6 +2,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using InnerHealth.Api.Dtos;
 using InnerHealth.Api.Services;
+using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InnerHealth.Api.Controllers;
 
@@ -54,6 +56,12 @@ public class TaskController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TaskItemDto>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+     Summary = "Retorna todas as tarefas agendadas para o dia atual.",
+        Description = "Lista todas as tarefas cujo campo 'date' corresponde à data de hoje."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Tarefas do dia retornadas com sucesso.", typeof(IEnumerable<TaskItemDto>))]
+
     public async Task<IActionResult> GetToday()
     {
         var date = DateOnly.FromDateTime(DateTime.Now);
@@ -94,6 +102,12 @@ public class TaskController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TaskItemDto>), StatusCodes.Status200OK)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Retorna todas as tarefas cadastradas.",
+        Description = "Lista todas as tarefas existentes no sistema, independentemente da data."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Lista completa de tarefas retornada com sucesso.", typeof(IEnumerable<TaskItemDto>))]
+
     public async Task<IActionResult> GetAll()
     {
         var tasks = await _taskService.GetAllTasksAsync();
@@ -136,6 +150,13 @@ public class TaskController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Cria uma nova tarefa.",
+        Description = "Registra uma nova tarefa com título, descrição opcional, data e prioridade."
+    )]
+    [SwaggerResponse(StatusCodes.Status201Created, "Tarefa criada com sucesso.", typeof(TaskItemDto))]
+    [SwaggerResponse(StatusCodes.Status400BadRequest, "Dados enviados são inválidos.")]
+
     public async Task<IActionResult> Post([FromBody] CreateTaskItemDto dto)
     {
         var task = await _taskService.AddTaskAsync(dto.Title!, dto.Description, dto.Date, dto.Priority);
@@ -170,6 +191,13 @@ public class TaskController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Atualiza uma tarefa existente.",
+        Description = "Permite atualizar título, descrição, data, prioridade e status de conclusão."
+    )]
+    [SwaggerResponse(StatusCodes.Status200OK, "Tarefa atualizada com sucesso.", typeof(TaskItemDto))]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Tarefa não encontrada.")]
+
     public async Task<IActionResult> Put(int id, [FromBody] UpdateTaskItemDto dto)
     {
         var updated = await _taskService.UpdateTaskAsync(
@@ -198,11 +226,19 @@ public class TaskController : ControllerBase
     /// <param name="id">ID da tarefa a ser excluída.</param>
     /// <response code="204">Tarefa excluída com sucesso.</response>
     /// <response code="404">Tarefa não encontrada.</response>
+    [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [MapToApiVersion("1.0")]
     [MapToApiVersion("2.0")]
+    [SwaggerOperation(
+        Summary = "Exclui uma tarefa pelo ID.",
+        Description = "Remove definitivamente uma tarefa cadastrada."
+    )]
+    [SwaggerResponse(StatusCodes.Status204NoContent, "Tarefa excluída com sucesso.")]
+    [SwaggerResponse(StatusCodes.Status404NotFound, "Tarefa não encontrada.")]
+
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _taskService.DeleteTaskAsync(id);
