@@ -1,178 +1,294 @@
-# InnerHealth API
+# 🌿 InnerHealth API
 
-## Visão Geral
-
-A **InnerHealth API** é um backend RESTful em C#/.NET 8 criado como parte do projeto interdisciplinar *O Futuro do Trabalho*.  
-Ela monitora hábitos de bem-estar e produtividade — hidratação, sol, meditação, sono, atividades físicas e tarefas — oferecendo uma base moderna e extensível para projetos acadêmicos ou evoluções futuras.
-
-A proposta é simples: registrar pequenos hábitos diários e gerar uma visão clara da rotina do usuário, ajudando na construção de práticas saudáveis no trabalho e na vida cotidiana.
+### Projeto Global Solution — SOA & WebServices (2º Semestre / FIAP)
 
 ---
 
-## Funcionalidades
+## 📌 Visão Geral
 
-- **Perfil do Usuário**  
-  Peso, altura, idade, horas de sono, qualidade do sono — utilizados para metas e recomendações.
-- **Hidratação**  
-  Registros de ingestão de água (ml). Meta automática: `peso × 35 ml`.
-- **Exposição ao Sol**  
-  Sessões diárias em minutos. Meta padrão: **10 min**.
-- **Meditação**  
-  Sessões em minutos. Meta padrão: **5 min**.
-- **Sono**  
-  Registros de horas dormidas e qualidade diária.
-- **Atividade Física**  
-  Modalidade + duração.
-- **Tarefas**  
-  Criação, edição e conclusão de tarefas diárias.
-- **Swagger**  
-  Documentação automática acessível em `/swagger`.
-- **Versionamento de API**  
-  Suporte às versões `v1` e `v2` com rotas `/api/v1/...` e `/api/v2/...`.
+A **InnerHealth API** é uma aplicação **RESTful** desenvolvida em **C#/.NET 8** com enfoque em **SOA – Arquitetura Orientada a Serviços**.
+O objetivo é monitorar hábitos essenciais de bem-estar — como hidratação, sono, meditação, exposição ao sol, tarefas e atividades físicas — oferecendo dados consistentes e centralizados para gerar insights de saúde e produtividade.
+
+O projeto foi desenvolvido seguindo rigorosamente os critérios da disciplina de **SOA & WebServices**, incluindo:
+
+* Entities + DTOs + Enums
+* Padrão ResponseEntity
+* Tratamento global de exceções via ControllerAdvice
+* Serviços independentes
+* Modularização orientada a serviços
+* Versionamento de API (v1 e v2)
+* Documentação Swagger
+* Autenticação com JWT
+* Autorização por perfis de usuário
+* Política de sessão **STATELESS**
 
 ---
 
-## Arquitetura da Solução
+## 👥 Integrantes do Grupo
 
-A estrutura segue um padrão simples, organizado e escalável:
+| Nome                     | RM      |
+| ------------------------ | ------- |
+| Henrique Pontes Oliveira | RM98036 |
+| Rafael Autieri dos Anjos | RM550885 |
+| Rafael Carvalho Mattos | RM99874 |
+
+---
+
+## 🚀 Tecnologias Utilizadas
+
+* **C# / .NET 8**
+* **Entity Framework Core**
+* **SQLite** (persistência automática por arquivo)
+* **JWT Authentication**
+* **BCrypt (hash de senha)**
+* **Swagger / OpenAPI 3.0**
+* **API Versioning**
+* **Arquitetura baseada em serviços**
+
+---
+
+# 🏛 Arquitetura da Solução
+
+A aplicação segue o padrão:
 
 ```
-Cliente → Controllers → Services → Entity Framework Core → SQLite
+Cliente → Controllers → Services → Repositories → EF Core → SQLite
 ```
 
-- **Controllers** lidam com as requisições HTTP.  
-- **Services** contêm a lógica de negócios.  
-- **DbContext** garante persistência.  
-- **SQLite** é usado como banco de dados local baseado em arquivo (`InnerHealth.db`).  
+### ✔ Controllers
 
-O banco é criado automaticamente na primeira execução.
+Recebem as requisições HTTP e delegam regras de negócio.
+
+### ✔ Services
+
+Contêm toda a lógica da aplicação.
+
+### ✔ Repositories
+
+Responsáveis pela persistência (CRUD).
+
+### ✔ DTOs
+
+Controlam entrada e saída de dados.
+
+### ✔ Entities
+
+Representam o modelo de domínio.
+
+### ✔ GlobalExceptionHandler
+
+Padroniza todos os erros retornados pela API.
 
 ---
 
-## Como Começar
+## 📂 Estrutura de Pastas
 
-### 1. Pré-requisitos
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-
-*(Nenhuma instalação de SQL Server é necessária.)*
+```
+InnerHealth.Api/
+ ├── Auth/
+ ├── Controllers/
+ ├── Entities/
+ ├── Enums/
+ ├── Dtos/
+ ├── Data/
+ ├── Repositories/
+ ├── Services/
+ ├── Middlewares/
+ ├── Program.cs
+ ├── appsettings.json
+ └── README.md
+```
 
 ---
 
-### 2. Clonar o Repositório
+# 🔒 Autenticação e Autorização
 
-```bash
+A API implementa **JWT** para autenticação e roles para autorização.
+
+### ✔ Login
+
+* Endpoint: `/api/auth/login`
+* Retorna: `token`, `email`, `role`
+
+### ✔ Roles
+
+* `User`
+* `Admin`
+
+### ✔ Exemplo de proteção:
+
+```
+[Authorize(Roles = "Admin")]  
+```
+
+### ✔ Política STATLESS
+
+Sem sessão. O token é validado em cada requisição.
+
+---
+
+# ⚠️ Tratamento Global de Exceções
+
+A aplicação possui classe `GlobalExceptionHandler` que captura:
+
+* `ValidationException`
+* `UnauthorizedAccessException`
+* `EntityNotFoundException`
+* Qualquer erro inesperado
+
+Retornando sempre JSON padronizado com `ProblemDetails`.
+
+---
+
+# 📘 Documentação Swagger
+
+A API possui documentação completa disponível em:
+
+```
+localhost:8080/swagger
+```
+
+Inclui:
+
+* Exemplos
+* Models de DTOs
+* Versionamento (v1 e v2)
+
+---
+
+# 🧩 Versionamento de API
+
+A API suporta múltiplas versões:
+
+```
+/api/v1/... 
+/api/v2/... 
+```
+
+Atualmente ambas operam com os mesmos recursos.
+
+---
+
+# 📌 Funcionalidades da API
+
+Cada módulo possui endpoints completos (GET/POST/PUT/DELETE).
+
+## 🧍 Perfil do Usuário
+
+* GET `/api/v{v}/profile`
+* PUT `/api/v{v}/profile`
+
+## 💧 Água
+
+* GET `/api/v{v}/water/today`
+* GET `/api/v{v}/water/week`
+* POST `/api/v{v}/water`
+* PUT `/api/v{v}/water/{id}`
+* DELETE `/api/v{v}/water/{id}`
+
+## ☀ Sol
+
+* GET `/api/v{v}/sunlight/today`
+* GET `/api/v{v}/sunlight/week`
+* POST `/api/v{v}/sunlight`
+* PUT `/api/v{v}/sunlight/{id}`
+* DELETE `/api/v{v}/sunlight/{id}`
+
+## 🧘 Meditação
+
+* GET `/api/v{v}/meditation/today`
+* GET `/api/v{v}/meditation/week`
+* POST `/api/v{v}/meditation`
+* PUT `/api/v{v}/meditation/{id}`
+* DELETE `/api/v{v}/meditation/{id}`
+
+## 😴 Sono
+
+* GET `/api/v{v}/sleep/today`
+* GET `/api/v{v}/sleep/week`
+* POST `/api/v{v}/sleep`
+* PUT `/api/v{v}/sleep/{id}`
+* DELETE `/api/v{v}/sleep/{id}`
+
+## 🏃 Atividade Física
+
+* GET `/api/v{v}/activity/today`
+* GET `/api/v{v}/activity/week`
+* POST `/api/v{v}/activity`
+* PUT `/api/v{v}/activity/{id}`
+* DELETE `/api/v{v}/activity/{id}`
+
+## 📋 Tarefas
+
+* GET `/api/v{v}/tasks/today`
+* GET `/api/v{v}/tasks`
+* POST `/api/v{v}/tasks`
+* PUT `/api/v{v}/tasks/{id}`
+* DELETE `/api/v{v}/tasks/{id}`
+
+---
+
+# 📊 Metas Automáticas
+
+* **Água:** `peso × 35 ml`
+* **Sol:** 10 minutos
+* **Meditação:** 5 minutos
+
+---
+
+# ▶ Como Executar o Projeto
+
+## 1. Instalar o .NET 8
+
+[https://dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)
+
+## 2. Clonar o Repositório
+
+```
 git clone <url-do-repositorio>
-cd InnerHealth-backend/InnerHealth.Api
+cd InnerHealth.Api
 ```
 
----
+## 3. Rodar a API
 
-### 3. Executar a API
-
-```bash
+```
 dotnet run
 ```
 
-A API inicia em:
+A aplicação estará disponível em:
+`http://localhost:5000`
 
-- **http://localhost:5000**  
-- Swagger em **http://localhost:5000/swagger**
+Swagger:
+`http://localhost:5000/swagger`
 
-O arquivo **InnerHealth.db** será criado automaticamente.
-
----
-
-## Versionamento e Rotas
-
-A API usa versionamento direto na URL.  
-Exemplos:
-
-```
-/api/v1/profile
-/api/v2/water/today
-```
-
-As versões v1 e v2 atualmente possuem os mesmos endpoints.
+O banco **InnerHealth.db** será criado automaticamente.
 
 ---
 
-## Endpoints Principais
+# 📦 Deploy (Opcional)
 
-`{v}` = versão (1 ou 2)
+O projeto pode ser facilmente publicado via:
 
-### Perfil
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| GET | `/api/v{v}/profile` | Obtém o perfil |
-| PUT | `/api/v{v}/profile` | Atualiza o perfil |
-
-### Água
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| GET | `/api/v{v}/water/today` | Dados de hoje |
-| GET | `/api/v{v}/water/week` | Totais semanais |
-| POST | `/api/v{v}/water` | Registra ingestão |
-| PUT | `/api/v{v}/water/{id}` | Edita ingestão |
-| DELETE | `/api/v{v}/water/{id}` | Remove ingestão |
-
-### Sol, Meditação, Sono, Atividade Física
-Padrão igual ao módulo de água:
-
-- `/today`
-- `/week`
-- POST (criar)
-- PUT (editar)
-- DELETE (remover)
-
-### Tarefas
-| Método | Rota |
-|--------|-------|
-| GET | `/api/v{v}/tasks/today` |
-| GET | `/api/v{v}/tasks` |
-| POST | `/api/v{v}/tasks` |
-| PUT | `/api/v{v}/tasks/{id}` |
-| DELETE | `/api/v{v}/tasks/{id}` |
+* Docker
+* Azure App Service
+* IIS (Windows)
+* Linux + Nginx
 
 ---
 
-## Metas Diárias
+# 📚 Extensões Futuras
 
-- **Água:** `peso × 35 ml`  
-- **Sol:** 10 minutos  
-- **Meditação:** 5 minutos  
-
-As metas são sugeridas e podem ser ultrapassadas ou ajustadas pelos registros do usuário.
-
----
-
-## Controle Diário
-
-- Cada registro usa `DateOnly`  
-- Dados semanais sempre usam **segunda–domingo**  
-- Dias sem dados retornam **zero ou nulo**, facilitando gráficos e dashboards.
+* Dashboard completo com gráficos
+* Aplicativo mobile (React Native)
+* IA para recomendações de saúde
+* Histórico e relatórios avançados
 
 ---
 
-## Autenticação
+# 🏁 Conclusão
 
-A API **não possui autenticação** no momento, pois o foco é demonstrar funcionalidades e simplicidade.
-
-Para o futuro:
-
-- JWT  
-- múltiplos usuários  
-- integração com aplicativos móveis  
+A **InnerHealth API** atende integralmente aos requisitos propostos para o projeto de **SOA & WebServices**, oferecendo uma solução completa, modular, extensível e documentada — preparada para integração com front-end, mobile ou serviços externos.
 
 ---
 
-## Extensões Futuras
-
-- Importação de dados via dispositivos (teclado/mouse, estresse)  
-- Relatórios com IA  
-- App mobile + notificações  
-- Versionamento avançado na v2  
-- Deploy em nuvem (Azure, AWS)
-
----
-
-Sinta-se livre para adaptar, expandir e contribuir com o projeto!
+© 2025 – InnerHealth API — FIAP Global Solut
