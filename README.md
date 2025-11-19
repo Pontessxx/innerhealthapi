@@ -1,7 +1,7 @@
 # 🌿 InnerHealth API
 
 ### Projeto Global Solution — SOA & WebServices (2º Semestre / FIAP)
-
+[LINK APP TYPESCRIPT EXPO](https://github.com/Pontessxx/GS-InnerHealth-app)
 ---
 
 ## 📌 Visão Geral
